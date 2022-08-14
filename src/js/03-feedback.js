@@ -1,42 +1,58 @@
 import throttle from 'lodash.throttle'
-import '../css/common.css'
-import '../css/03-feedback.css'
+
+const form = document.querySelector(".feedback-form");
+const email = document.querySelector('input[name="email"]'); 
+const message = document.querySelector('textarea');
 
 const STORAGE_KEY = 'feedback-form-state';
-const formData = {};
-
-const refs = {
-    form: document.querySelector(".feedback-form"),
-    input: document.querySelector('input'),
-    textarea: document.querySelector('textarea'),
-};
 
 
-refs.form.addEventListener('input', throttle(onFormInput, 500));
-refs.form.addEventListener('submit', onFormSubmit);
-
-
-localData();
+form.addEventListener('input', throttle(onFormInput, 500));
 
 
 function onFormInput(e) {
- formData[e.target.name] = e.target.value;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+    const formInput =
+    {
+        email: form.elements.email.value,
+        message: form.elements.message.value,
+    };
+    try {
+       localStorage.setItem(STORAGE_KEY, JSON.stringify(formInput));
+    } catch (error) {
+        console.error('error: ', error.message);
+    }
 };
+form.addEventListener('submit', onFormSubmit);
 
 function onFormSubmit(e) {
     e.preventDefault();
-    e.currentTarget.reset();
+
+    const {
+        elements: { email, message },
+    } = e.currentTarget;
+    if (email.value === '' || message.value === '') {
+        return alert ('All fields must be filled')
+    }
+      console.log({ email: email.value, message: message.value });
+
+     e.currentTarget.reset();
     localStorage.removeItem(STORAGE_KEY)
 };
 
 function localData() {
-    const formValues = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    try {
+        const formValues = JSON.parse(localStorage.getItem(STORAGE_KEY));
 
-    if (formValues) {
-        refs.textarea.value = formValues.message;
-        refs.input.value = formValues.email;
-    };
+        if (formValues !== null) {
+            email.value = formValues.email;
+            message.value = formValues.message;
+        }
+    } catch (error) {
+        console.error('error: ', error.message);
+    }
+  
 };
+localData();
 
-console.log(formData);
+
+
